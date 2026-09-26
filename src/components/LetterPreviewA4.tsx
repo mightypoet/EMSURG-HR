@@ -27,8 +27,13 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
     <div className="border-b-2 border-teal-700/80 pb-4 mb-6">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 shadow-xs border border-teal-200">
-            <Building2 className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1 overflow-hidden">
+            <img
+              src="https://0e8dtpaport9ku82.public.blob.vercel-storage.com/emsurg_logo_cropped.png"
+              alt="Emsurg Healthcare Official Logo"
+              className="max-h-full max-w-full object-contain"
+              crossOrigin="anonymous"
+            />
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 font-sans uppercase">

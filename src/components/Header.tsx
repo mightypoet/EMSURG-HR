@@ -39,8 +39,13 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between h-16">
           {/* Logo & Company Title */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-600 shadow-xs">
-              <Building2 className="w-5 h-5 text-teal-600" />
+            <div className="w-11 h-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1.5 shadow-xs overflow-hidden">
+              <img
+                src="https://0e8dtpaport9ku82.public.blob.vercel-storage.com/emsurg_logo_cropped.png"
+                alt="Emsurg Healthcare Logo"
+                className="max-h-full max-w-full object-contain"
+                crossOrigin="anonymous"
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
