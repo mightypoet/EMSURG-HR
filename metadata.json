@@ -1,0 +1,6 @@
+{
+  "name": "Emsurg HR Document Center",
+  "description": "Official HR Management and Employee Document Generator for Emsurg Healthcare India Pvt. Ltd. Generate legal Offer Letters, Promotion Letters, Appointment Letters, and Relieving Letters with live A4 preview and PDF export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
