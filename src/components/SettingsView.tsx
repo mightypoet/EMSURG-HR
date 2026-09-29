@@ -242,6 +242,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     src={formData.signatureImage}
                     alt="Active Signature"
                     className="max-h-16 max-w-full object-contain"
+                    crossOrigin="anonymous"
                   />
                 ) : (
                   <span className="text-xs text-slate-400 italic">No signature uploaded</span>
@@ -324,6 +325,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     src={formData.stampImage}
                     alt="Active Seal Stamp"
                     className="max-h-16 max-w-full object-contain"
+                    crossOrigin="anonymous"
                   />
                 ) : (
                   <span className="text-xs text-slate-400 italic">No seal stamp uploaded</span>

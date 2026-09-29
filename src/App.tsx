@@ -57,19 +57,27 @@ export default function App() {
       const saved = localStorage.getItem('emsurg_settings');
       if (!saved) return defaultCompanySettings;
       const parsed = JSON.parse(saved);
-      // If user had previous placeholder CIN or address from earlier version, update to new preset
-      if (parsed.cin === 'U33110HR2018PTC075421' || !parsed.website) {
-        return {
-          ...defaultCompanySettings,
-          ...parsed,
-          addressLine1: parsed.addressLine1?.includes('Sector 18') ? defaultCompanySettings.addressLine1 : parsed.addressLine1,
-          cityStateZip: parsed.cityStateZip?.includes('Gurugram') ? defaultCompanySettings.cityStateZip : parsed.cityStateZip,
-          cin: parsed.cin === 'U33110HR2018PTC075421' ? defaultCompanySettings.cin : parsed.cin,
-          phone: parsed.phone?.includes('0124') ? defaultCompanySettings.phone : parsed.phone,
-          website: parsed.website || defaultCompanySettings.website,
-        };
-      }
-      return { ...defaultCompanySettings, ...parsed };
+      
+      const isLegacySignature =
+        !parsed.signatureImage ||
+        parsed.signatureImage.startsWith('data:image/svg+xml');
+      const isLegacyStamp =
+        !parsed.stampImage ||
+        parsed.stampImage.startsWith('data:image/svg+xml');
+
+      const updated = {
+        ...defaultCompanySettings,
+        ...parsed,
+        addressLine1: parsed.addressLine1?.includes('Sector 18') ? defaultCompanySettings.addressLine1 : (parsed.addressLine1 || defaultCompanySettings.addressLine1),
+        cityStateZip: parsed.cityStateZip?.includes('Gurugram') ? defaultCompanySettings.cityStateZip : (parsed.cityStateZip || defaultCompanySettings.cityStateZip),
+        cin: parsed.cin === 'U33110HR2018PTC075421' ? defaultCompanySettings.cin : (parsed.cin || defaultCompanySettings.cin),
+        phone: parsed.phone?.includes('0124') ? defaultCompanySettings.phone : (parsed.phone || defaultCompanySettings.phone),
+        website: parsed.website || defaultCompanySettings.website,
+        signatureImage: isLegacySignature ? defaultCompanySettings.signatureImage : parsed.signatureImage,
+        stampImage: isLegacyStamp ? defaultCompanySettings.stampImage : parsed.stampImage,
+      };
+
+      return updated;
     } catch {
       return defaultCompanySettings;
     }

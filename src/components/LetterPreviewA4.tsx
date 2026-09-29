@@ -104,14 +104,15 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
         )}
 
         {/* Signature and Stamp Container */}
-        <div className="relative min-h-[56px] my-1 flex items-center">
+        <div className="relative min-h-[58px] my-1 flex items-center">
           {/* Optional Stamp positioned behind/alongside signature */}
           {hasStamp && (
-            <div className="absolute left-24 -top-3 w-20 h-20 pointer-events-none opacity-85 z-0">
+            <div className="absolute left-20 -top-3 w-22 h-22 pointer-events-none opacity-85 z-0">
               <img 
                 src={companySettings.stampImage} 
                 alt="Official Company Seal" 
                 className="w-full h-full object-contain"
+                crossOrigin="anonymous"
               />
             </div>
           )}
@@ -122,8 +123,8 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
               <img
                 src={companySettings.signatureImage}
                 alt={`Signature of ${signatoryName}`}
-                className="max-h-[52px] max-w-[190px] object-contain block drop-shadow-xs"
-                style={{ filter: 'contrast(1.05)' }}
+                className="max-h-[54px] max-w-[195px] object-contain block drop-shadow-xs"
+                crossOrigin="anonymous"
               />
             </div>
           ) : (

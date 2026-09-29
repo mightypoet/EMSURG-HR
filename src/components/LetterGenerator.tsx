@@ -1166,7 +1166,12 @@ export const LetterGenerator: React.FC<LetterGeneratorProps> = ({
                   <div className="flex items-center gap-2">
                     <div className="w-16 h-10 bg-white rounded border border-slate-200 flex items-center justify-center p-1 overflow-hidden">
                       {companySettings.signatureImage ? (
-                        <img src={companySettings.signatureImage} alt="Sig" className="max-h-full max-w-full object-contain" />
+                        <img
+                          src={companySettings.signatureImage}
+                          alt="Sig"
+                          className="max-h-full max-w-full object-contain"
+                          crossOrigin="anonymous"
+                        />
                       ) : (
                         <span className="text-[9px] text-slate-400">No Sig</span>
                       )}
