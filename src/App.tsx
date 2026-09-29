@@ -55,7 +55,21 @@ export default function App() {
   const [companySettings, setCompanySettings] = useState<CompanySettings>(() => {
     try {
       const saved = localStorage.getItem('emsurg_settings');
-      return saved ? JSON.parse(saved) : defaultCompanySettings;
+      if (!saved) return defaultCompanySettings;
+      const parsed = JSON.parse(saved);
+      // If user had previous placeholder CIN or address from earlier version, update to new preset
+      if (parsed.cin === 'U33110HR2018PTC075421' || !parsed.website) {
+        return {
+          ...defaultCompanySettings,
+          ...parsed,
+          addressLine1: parsed.addressLine1?.includes('Sector 18') ? defaultCompanySettings.addressLine1 : parsed.addressLine1,
+          cityStateZip: parsed.cityStateZip?.includes('Gurugram') ? defaultCompanySettings.cityStateZip : parsed.cityStateZip,
+          cin: parsed.cin === 'U33110HR2018PTC075421' ? defaultCompanySettings.cin : parsed.cin,
+          phone: parsed.phone?.includes('0124') ? defaultCompanySettings.phone : parsed.phone,
+          website: parsed.website || defaultCompanySettings.website,
+        };
+      }
+      return { ...defaultCompanySettings, ...parsed };
     } catch {
       return defaultCompanySettings;
     }
@@ -245,9 +259,6 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-4 text-[11px] text-slate-500">
-            <span className="flex items-center gap-1 text-teal-700 font-medium">
-              <ShieldCheck className="w-3.5 h-3.5 text-teal-600" /> ISO 13485:2016 Compliant
-            </span>
             <span>CIN: <span className="font-mono text-slate-700">{companySettings.cin}</span></span>
             <span>Authorized Signatory: <strong className="text-slate-700">{companySettings.signatoryName}</strong></span>
           </div>

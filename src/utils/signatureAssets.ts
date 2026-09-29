@@ -55,7 +55,7 @@ export const defaultEmsurgStamp = `data:image/svg+xml;utf8,${encodeURIComponent(
   </text>
   <text font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#0284c7" letter-spacing="1.2">
     <textPath href="#circlePathBottom" startOffset="50%" text-anchor="middle">
-      ★ PVT. LTD. GURUGRAM ★
+      ★ PVT. LTD. KOLKATA ★
     </textPath>
   </text>
 </svg>

@@ -51,7 +51,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="relative z-10 max-w-3xl">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white text-teal-700 border border-teal-200/80 shadow-xs mb-3">
             <Building className="w-3.5 h-3.5 text-teal-600" />
-            <span>Admin &amp; HR Department • Gurugram HQ</span>
+            <span>Admin &amp; HR Department • Kolkata Regd. Office</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
             Emsurg Healthcare Document Center

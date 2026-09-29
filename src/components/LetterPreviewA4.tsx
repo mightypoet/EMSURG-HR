@@ -39,21 +39,20 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
             <h1 className="text-xl font-bold tracking-tight text-slate-900 font-sans uppercase">
               {companySettings.companyName}
             </h1>
-            <p className="text-xs text-teal-800 font-medium tracking-wide flex items-center gap-1.5 font-sans">
-              <span>Medical Devices & Healthcare Solutions</span>
-              <span className="text-slate-400">•</span>
-              <span className="inline-flex items-center gap-0.5 text-slate-600">
-                <ShieldCheck className="w-3.5 h-3.5 text-teal-600" /> ISO 13485:2016 Certified
-              </span>
+            <p className="text-xs text-teal-800 font-medium tracking-wide font-sans">
+              Medical Devices & Healthcare Solutions
             </p>
           </div>
         </div>
 
-        <div className="text-right text-[10px] text-slate-500 font-sans leading-tight">
-          <p className="font-semibold text-slate-700">{companySettings.addressLine1}</p>
-          <p>{companySettings.cityStateZip}</p>
-          <p className="text-slate-600 mt-0.5">CIN: {companySettings.cin}</p>
-          <p className="text-slate-600">{companySettings.phone} | {companySettings.email}</p>
+        <div className="text-right text-[10.5px] text-slate-500 font-sans leading-tight">
+          <p className="font-semibold text-slate-800">Regd. Office: {companySettings.addressLine1}</p>
+          <p className="text-slate-700">{companySettings.cityStateZip}</p>
+          <p className="text-slate-600 mt-0.5"><span className="font-medium text-slate-700">CIN:</span> {companySettings.cin}</p>
+          <p className="text-slate-600">
+            <span>Ph: {companySettings.phone}</span>
+            {companySettings.website && <span> • Website: {companySettings.website}</span>}
+          </p>
         </div>
       </div>
     </div>
