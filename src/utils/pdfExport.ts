@@ -102,13 +102,7 @@ function sanitizeClonedDocument(clonedDoc: Document) {
 
 export async function exportDocumentToPdf({ fileName, elementIds }: ExportPdfOptions): Promise<boolean> {
   try {
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4',
-      compress: true,
-    });
-
+    const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = 210; // A4 width in mm
     const pdfHeight = 297; // A4 height in mm
 
@@ -140,22 +134,42 @@ export async function exportDocumentToPdf({ fileName, elementIds }: ExportPdfOpt
         })
       );
 
-      // Render the DOM element with high resolution and crisp vector reproduction
+      // Render the DOM element with 1:1 fixed 794px width without zoom/transform distortion
       const canvas = await html2canvas(element, {
-        scale: 2.8, // Ultra-crisp rendering for signatures, seals, and typography
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
-        windowWidth: 1024,
+        windowWidth: 794,
         imageTimeout: 10000,
         onclone: (clonedDoc) => {
+          // Reset any zoom or responsive transform applied to preview wrapper
+          const allTargets = Array.from(clonedDoc.querySelectorAll('.a4-page')) as HTMLElement[];
+          allTargets.forEach((target) => {
+            target.style.transform = 'none';
+            target.style.margin = '0 auto';
+            target.style.width = '794px';
+            target.style.height = '1123px';
+            target.style.minHeight = '1123px';
+            target.style.maxHeight = '1123px';
+            target.style.boxSizing = 'border-box';
+          });
+
+          // Also check parent wrapper transforms
+          const parentWrappers = Array.from(clonedDoc.querySelectorAll('[style*="transform"]')) as HTMLElement[];
+          parentWrappers.forEach((el) => {
+            if (el.style.transform && el.style.transform.includes('scale')) {
+              el.style.transform = 'none';
+            }
+          });
+
           sanitizeClonedDocument(clonedDoc);
         },
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.98);
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+      const imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
       pagesRendered++;
     }
 
