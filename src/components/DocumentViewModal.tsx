@@ -34,16 +34,21 @@ export const DocumentViewModal: React.FC<DocumentViewModalProps> = ({
 
   const handleDownload = async () => {
     setIsDownloading(true);
-    const elementIds = 
-      documentRecord.documentType === 'offer' || documentRecord.documentType === 'appointment'
-        ? ['doc-page-1', 'doc-page-2']
-        : ['doc-page-1'];
+    try {
+      const elementIds = 
+        documentRecord.documentType === 'offer' || documentRecord.documentType === 'appointment'
+          ? ['doc-page-1', 'doc-page-2']
+          : ['doc-page-1'];
 
-    await exportDocumentToPdf({
-      fileName: documentRecord.fileName,
-      elementIds,
-    });
-    setIsDownloading(false);
+      await exportDocumentToPdf({
+        fileName: documentRecord.fileName,
+        elementIds,
+      });
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handlePrint = () => {
