@@ -1,7 +1,6 @@
 import React from 'react';
 import { CompanySettings, DocumentType, OfferLetterData, PromotionLetterData, AppointmentLetterData, RelievingLetterData } from '../types';
 import { formatIndianCurrency, formatDisplayDate } from '../utils/numberToWords';
-import { Building2, ShieldCheck } from 'lucide-react';
 
 interface LetterPreviewA4Props {
   documentType: DocumentType;
@@ -22,134 +21,179 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
   companySettings,
   showLetterhead = true,
 }) => {
-  // Common Letterhead Header component
-  const LetterheadHeader = () => (
-    <div className="border-b-2 border-teal-700/80 pb-3 mb-4 shrink-0" style={{ borderBottomWidth: '2px', borderBottomColor: '#0f766e' }}>
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          {/* Strict Fixed Logo Dimensions */}
-          <div style={{ width: '140px', maxWidth: '140px', height: 'auto', maxHeight: '55px', flexShrink: 0, overflow: 'hidden' }}>
-            <img
-              src="https://0e8dtpaport9ku82.public.blob.vercel-storage.com/emsurg_logo_cropped.png"
-              alt="Emsurg Healthcare Official Logo"
-              style={{ width: '140px', maxWidth: '140px', height: 'auto', maxHeight: '55px', objectFit: 'contain', display: 'block' }}
-              crossOrigin="anonymous"
-            />
-          </div>
-          <div>
-            <h1 
-              style={{ fontSize: '18px', lineHeight: '22px' }} 
-              className="font-bold tracking-tight text-slate-900 font-sans uppercase m-0 p-0"
-            >
-              {companySettings.companyName}
-            </h1>
-            <p 
-              style={{ fontSize: '11px', lineHeight: '14px' }} 
-              className="text-teal-800 font-semibold tracking-wide font-sans mt-0.5 m-0 p-0"
-            >
-              Medical Devices &amp; Healthcare Solutions
-            </p>
-          </div>
+  // Shared Header Component
+  const LetterheadHeader: React.FC<{ isPrint?: boolean }> = ({ isPrint }) => (
+    <div 
+      style={{
+        borderBottom: '2px solid #0f766e',
+        paddingBottom: '12px',
+        marginBottom: '16px',
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '16px',
+        width: '100%',
+        boxSizing: 'border-box',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ width: '140px', height: '50px', flexShrink: 0, overflow: 'hidden' }}>
+          <img
+            src="https://0e8dtpaport9ku82.public.blob.vercel-storage.com/emsurg_logo_cropped.png"
+            alt="Emsurg Healthcare Official Logo"
+            style={{ width: '140px', height: '50px', objectFit: 'contain', display: 'block' }}
+            crossOrigin="anonymous"
+          />
         </div>
-
-        <div style={{ fontSize: '10px', lineHeight: '13px' }} className="text-right text-slate-600 font-sans shrink-0">
-          <p className="font-semibold text-slate-800">Regd. Office: {companySettings.addressLine1}</p>
-          <p className="text-slate-700">{companySettings.cityStateZip}</p>
-          <p className="text-slate-600 mt-0.5"><span className="font-medium text-slate-700">CIN:</span> {companySettings.cin}</p>
-          <p className="text-slate-600">
-            <span>Ph: {companySettings.phone}</span>
-            {companySettings.website && <span> • Website: {companySettings.website}</span>}
+        <div>
+          <h1 
+            style={{
+              fontSize: '17px',
+              lineHeight: '21px',
+              fontWeight: 800,
+              color: '#0f172a',
+              textTransform: 'uppercase',
+              margin: 0,
+              padding: 0,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {companySettings.companyName}
+          </h1>
+          <p 
+            style={{
+              fontSize: '11px',
+              lineHeight: '14px',
+              fontWeight: 600,
+              color: '#0f766e',
+              margin: '3px 0 0 0',
+              padding: 0,
+            }}
+          >
+            Medical Devices &amp; Healthcare Solutions
           </p>
         </div>
       </div>
+
+      <div style={{ fontSize: '11px', lineHeight: '15px', textAlign: 'right', color: '#475569', flexShrink: 0 }}>
+        <p style={{ margin: 0, fontWeight: 700, color: '#1e293b' }}>Regd. Office: {companySettings.addressLine1}</p>
+        <p style={{ margin: '1px 0 0 0', color: '#334155' }}>{companySettings.cityStateZip}</p>
+        <p style={{ margin: '1px 0 0 0', color: '#475569' }}>
+          <span style={{ fontWeight: 600, color: '#334155' }}>CIN:</span> {companySettings.cin}
+        </p>
+        <p style={{ margin: '1px 0 0 0', color: '#475569' }}>
+          <span>Ph: {companySettings.phone}</span>
+          {companySettings.website && <span> • Website: {companySettings.website}</span>}
+        </p>
+      </div>
     </div>
   );
 
-  // Common Letterhead Footer component - pinned cleanly to the bottom
-  const LetterheadFooter = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => (
+  // Shared Footer Component
+  const LetterheadFooter: React.FC<{ pageNum: number; totalPages: number }> = ({ pageNum, totalPages }) => (
     <div 
-      className="mt-auto pt-3 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500 font-sans shrink-0 w-full"
-      style={{ marginTop: 'auto' }}
+      style={{
+        marginTop: 'auto',
+        paddingTop: '12px',
+        borderTop: '1px solid #cbd5e1',
+        fontSize: '10px',
+        lineHeight: '14px',
+        color: '#64748b',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexShrink: 0,
+        width: '100%',
+        boxSizing: 'border-box',
+      }}
     >
       <div>
-        <span className="font-semibold text-slate-700">{companySettings.companyName}</span>
-        <span className="mx-1.5 text-slate-300">|</span>
+        <span style={{ fontWeight: 700, color: '#334155' }}>{companySettings.companyName}</span>
+        <span style={{ margin: '0 6px', color: '#cbd5e1' }}>|</span>
         <span>Corporate HR &amp; Admin Department</span>
       </div>
       <div>
-        <span className="font-medium">Page {pageNum} of {totalPages}</span>
+        <span style={{ fontWeight: 600 }}>Page {pageNum} of {totalPages}</span>
       </div>
     </div>
   );
 
-  // Common Official Signatory & Seal Stamp Block (organized non-overlapping row)
-  const SignatoryBlock = ({
-    companyName = companySettings.companyName,
-    signatoryName = companySettings.signatoryName,
-    signatoryTitle = companySettings.signatoryTitle,
-    includeWarmRegards = true,
-    includeForCompany = true,
-    customClosing,
-  }: {
+  // Shared Signatory Block
+  const SignatoryBlock: React.FC<{
     companyName?: string;
     signatoryName?: string;
     signatoryTitle?: string;
     includeWarmRegards?: boolean;
     includeForCompany?: boolean;
     customClosing?: string;
+  }> = ({
+    companyName = companySettings.companyName,
+    signatoryName = companySettings.signatoryName,
+    signatoryTitle = companySettings.signatoryTitle,
+    includeWarmRegards = true,
+    includeForCompany = true,
+    customClosing,
   }) => {
     const hasSignature = companySettings.showSignature && Boolean(companySettings.signatureImage);
     const hasStamp = companySettings.showStamp && Boolean(companySettings.stampImage);
 
     return (
-      <div className="relative mt-4 select-none shrink-0">
+      <div style={{ position: 'relative', marginTop: '16px', userSelect: 'none', flexShrink: 0 }}>
         {customClosing ? (
-          <p className="text-slate-800">{customClosing}</p>
+          <p style={{ margin: '0 0 4px 0', color: '#1e293b', fontSize: '13px' }}>{customClosing}</p>
         ) : includeWarmRegards ? (
-          <p className="text-slate-800">Warm regards,</p>
+          <p style={{ margin: '0 0 4px 0', color: '#1e293b', fontSize: '13px' }}>Warm regards,</p>
         ) : null}
 
         {includeForCompany && (
-          <p className="font-bold mt-1 text-slate-900">For {companyName}</p>
+          <p style={{ margin: '4px 0', fontWeight: 700, color: '#0f172a', fontSize: '13px' }}>For {companyName}</p>
         )}
 
         {/* Organized Row: Signature & Official Seal aligned side-by-side with 20px gap */}
-        <div className="flex items-center gap-5 my-1.5 min-h-[52px]">
-          {/* Signature block */}
-          <div className="flex flex-col justify-end">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', margin: '6px 0', minHeight: '52px' }}>
+          {/* Signature */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
             {hasSignature ? (
               <img
                 src={companySettings.signatureImage}
                 alt={`Signature of ${signatoryName}`}
-                style={{ maxHeight: '48px', width: 'auto', objectFit: 'contain' }}
-                className="block drop-shadow-2xs"
+                style={{ maxHeight: '48px', maxWidth: '130px', objectFit: 'contain', display: 'block' }}
                 crossOrigin="anonymous"
               />
             ) : (
-              <div className="w-36 border-b border-dashed border-slate-300 pt-7" />
+              <div style={{ width: '130px', borderBottom: '1px dashed #cbd5e1', paddingTop: '28px' }} />
             )}
           </div>
 
           {/* Official Company Seal Stamp */}
           {hasStamp && (
-            <div 
-              style={{ width: '80px', height: '80px', flexShrink: 0 }}
-              className="flex items-center justify-center pointer-events-none"
-            >
+            <div style={{ width: '75px', height: '75px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <img 
                 src={companySettings.stampImage} 
                 alt="Official Company Seal" 
-                style={{ width: '80px', height: '80px', objectFit: 'contain' }}
-                className="w-full h-full object-contain opacity-90 drop-shadow-2xs"
+                style={{ width: '75px', height: '75px', objectFit: 'contain', display: 'block', opacity: 0.92 }}
                 crossOrigin="anonymous"
               />
             </div>
           )}
         </div>
 
-        {signatoryName && <p className="font-bold text-slate-900 leading-tight">{signatoryName}</p>}
-        {signatoryTitle && <p className="text-slate-800 text-[12.5px] leading-tight mt-0.5">{signatoryTitle}</p>}
-        {!includeForCompany && companyName && <p className="font-semibold text-slate-900 leading-tight mt-0.5">{companyName}</p>}
+        {signatoryName && (
+          <p style={{ margin: '2px 0 0 0', fontWeight: 700, color: '#0f172a', fontSize: '13px', lineHeight: '17px' }}>
+            {signatoryName}
+          </p>
+        )}
+        {signatoryTitle && (
+          <p style={{ margin: '2px 0 0 0', color: '#334155', fontSize: '12.5px', lineHeight: '16px' }}>
+            {signatoryTitle}
+          </p>
+        )}
+        {!includeForCompany && companyName && (
+          <p style={{ margin: '2px 0 0 0', fontWeight: 600, color: '#0f172a', fontSize: '12.5px', lineHeight: '16px' }}>
+            {companyName}
+          </p>
+        )}
       </div>
     );
   };
@@ -162,99 +206,104 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
     minHeight: '1123px',
     maxHeight: '1123px',
     boxSizing: 'border-box',
-    padding: '44px 50px 36px 50px',
+    padding: '48px 56px 40px 56px',
     overflow: 'hidden',
     position: 'relative',
     background: '#ffffff',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
   };
 
   /* =========================================================================
-     1. OFFER LETTER (2 Pages) - EXACT WORDING FROM UPLOADED TEMPLATE
+     1. OFFER LETTER CONTENT (2 Pages)
      ========================================================================= */
-  if (documentType === 'offer' && offerData) {
+  const renderOfferLetter = (isOffScreenPrint = false) => {
+    if (!offerData) return null;
     const ctcFormatted = typeof offerData.ctcAmount === 'number' 
       ? formatIndianCurrency(offerData.ctcAmount) 
       : offerData.ctcAmount;
 
     return (
-      <div id="printable-document" className="flex flex-col gap-8 print:gap-0 font-document text-slate-900 text-[13px] leading-relaxed">
+      <div 
+        id={isOffScreenPrint ? undefined : 'printable-document'} 
+        className={isOffScreenPrint ? undefined : 'flex flex-col gap-8 print:gap-0 font-document text-slate-900'}
+      >
         {/* PAGE 1 */}
         <div 
-          id="doc-page-1" 
-          className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
+          id={isOffScreenPrint ? undefined : 'doc-page-1'} 
+          className={isOffScreenPrint ? 'pdf-page' : 'a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto'}
           style={a4PageStyle}
         >
-          <div className="flex-1 flex flex-col">
-            {showLetterhead && <LetterheadHeader />}
+          <div style={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column' }}>
+            {showLetterhead && <LetterheadHeader isPrint={isOffScreenPrint} />}
 
-            <div className="mb-3">
-              <p className="font-medium text-xs">
-                <span className="font-bold">Date:-</span> {formatDisplayDate(offerData.letterDate) || '………………..'}
+            <div style={{ marginBottom: '12px' }}>
+              <p style={{ margin: 0, fontSize: '12px', fontWeight: 500 }}>
+                <span style={{ fontWeight: 700 }}>Date:-</span> {formatDisplayDate(offerData.letterDate) || '………………..'}
               </p>
               {offerData.referenceNo && (
-                <p className="text-[11px] text-slate-600 font-sans mt-0.5">
-                  <span className="font-semibold">Ref:</span> {offerData.referenceNo}
+                <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#475569' }}>
+                  <span style={{ fontWeight: 600 }}>Ref:</span> {offerData.referenceNo}
                 </p>
               )}
             </div>
 
-            <div className="mb-3.5 leading-snug text-xs">
-              <p className="font-bold">To,</p>
-              <p className="font-semibold">{offerData.employeeName || '…………………………….'}</p>
-              <div className="whitespace-pre-line text-slate-800">
+            <div style={{ marginBottom: '14px', fontSize: '12px', lineHeight: '16px' }}>
+              <p style={{ margin: 0, fontWeight: 700 }}>To,</p>
+              <p style={{ margin: 0, fontWeight: 600 }}>{offerData.employeeName || '…………………………….'}</p>
+              <div style={{ whiteSpace: 'pre-line', color: '#1e293b' }}>
                 {offerData.employeeAddress || '…………………………….\n…………………………….'}
               </div>
             </div>
 
-            <div className="text-center my-3">
-              <h2 className="text-[14px] font-bold underline tracking-wide">
+            <div style={{ textAlign: 'center', margin: '12px 0' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 700, textDecoration: 'underline', letterSpacing: '0.02em', margin: 0 }}>
                 Subject: Offer of Employment
               </h2>
             </div>
 
-            <p className="mb-2.5">
-              Dear <span className="font-semibold">{offerData.employeeName || '………………………..'}</span>,
+            <p style={{ margin: '0 0 10px 0', fontSize: '13px', lineHeight: '20px' }}>
+              Dear <span style={{ fontWeight: 600 }}>{offerData.employeeName || '………………………..'}</span>,
             </p>
 
-            <p className="mb-2.5 text-justify">
-              We are pleased to offer you the position of <span className="font-bold underline">{offerData.designation || '……………………………………………'}</span> with <span className="font-bold">{companySettings.companyName}</span>. Based on our discussions and evaluation of your qualifications and experience, we believe that your skills will contribute significantly to our organization and its commitment to advancing healthcare and medical device market.
+            <p style={{ margin: '0 0 10px 0', fontSize: '13px', lineHeight: '20px', textAlign: 'justify' }}>
+              We are pleased to offer you the position of <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{offerData.designation || '……………………………………………'}</span> with <span style={{ fontWeight: 700 }}>{companySettings.companyName}</span>. Based on our discussions and evaluation of your qualifications and experience, we believe that your skills will contribute significantly to our organization and its commitment to advancing healthcare and medical device market.
             </p>
 
-            <p className="mb-2.5 text-justify">
-              Your employment will commence on <span className="font-bold underline">{formatDisplayDate(offerData.joiningDate) || '………………….'}</span>, and you will be based at <span className="font-bold underline">{offerData.workLocation || '……………..'}</span>. You will report to <span className="font-bold underline">{offerData.reportingManager || '………………………………………..'}</span> or any other person designated by the management from time to time.
+            <p style={{ margin: '0 0 10px 0', fontSize: '13px', lineHeight: '20px', textAlign: 'justify' }}>
+              Your employment will commence on <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{formatDisplayDate(offerData.joiningDate) || '………………….'}</span>, and you will be based at <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{offerData.workLocation || '……………..'}</span>. You will report to <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{offerData.reportingManager || '………………………………………..'}</span> or any other person designated by the management from time to time.
             </p>
 
-            <div className="space-y-2.5 mt-2.5 text-justify">
+            <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'justify' }}>
               <div>
-                <h3 className="font-bold text-[13.5px]">1. Compensation and Benefits</h3>
-                <p className="mt-0.5">
-                  Your total Cost to Company {offerData.ctcLabel || '……………….'} will be INR <span className="font-bold underline">{ctcFormatted || '……………………….'}</span> per annum, payable as per the company’s payroll policy. A detailed breakup of the compensation structure will be shared separately once you join us. In addition to your salary, you will be eligible for benefits and reimbursements as per the company’s policies applicable from time to time.
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>1. Compensation and Benefits</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
+                  Your total Cost to Company {offerData.ctcLabel || '……………….'} will be INR <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{ctcFormatted || '……………………….'}</span> per annum, payable as per the company’s payroll policy. A detailed breakup of the compensation structure will be shared separately once you join us. In addition to your salary, you will be eligible for benefits and reimbursements as per the company’s policies applicable from time to time.
                 </p>
-                <p className="mt-1">
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
                   As an employee of Emsurg Healthcare India Pvt Ltd, you will be eligible for PF &amp; medical insurance. You will also be eligible for leave as per the rules &amp; regulations of the company.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">2. Probation Period</h3>
-                <p className="mt-0.5">
-                  You will be on a <span className="font-semibold underline">{offerData.probationPeriod || '…………………………………………'}</span> from the date of joining. Upon satisfactory performance during this period, your employment will be confirmed in writing by the company.
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>2. Probation Period</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
+                  You will be on a <span style={{ fontWeight: 600, textDecoration: 'underline' }}>{offerData.probationPeriod || '…………………………………………'}</span> from the date of joining. Upon satisfactory performance during this period, your employment will be confirmed in writing by the company.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">3. Roles and Responsibilities</h3>
-                <p className="mt-0.5">
-                  You will be responsible for performing duties related to <span className="underline font-medium">{offerData.responsibilities || '………………………………………'}</span> as assigned to you by the company in connection with its medical device business operations.
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>3. Roles and Responsibilities</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
+                  You will be responsible for performing duties related to <span style={{ fontWeight: 500, textDecoration: 'underline' }}>{offerData.responsibilities || '………………………………………'}</span> as assigned to you by the company in connection with its medical device business operations.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">4. Confidentiality</h3>
-                <p className="mt-0.5">
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>4. Confidentiality</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
                   During your employment with the company, you will have access to confidential information related to our products, business strategies, clinical data, and partner relationships. You are required to maintain strict confidentiality of all such information during and after your employment with the company.
                 </p>
               </div>
@@ -266,46 +315,58 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
 
         {/* PAGE 2 */}
         <div 
-          id="doc-page-2" 
-          className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
+          id={isOffScreenPrint ? undefined : 'doc-page-2'} 
+          className={isOffScreenPrint ? 'pdf-page' : 'a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto'}
           style={a4PageStyle}
         >
-          <div className="flex-1 flex flex-col">
+          <div style={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column' }}>
             {showLetterhead && (
-              <div className="border-b border-slate-200 pb-2.5 mb-4 flex justify-between items-center text-[11px] text-slate-500 font-sans shrink-0">
-                <span className="font-semibold text-slate-700">{companySettings.companyName} • Offer of Employment</span>
-                <span>Candidate: <strong className="text-slate-800">{offerData.employeeName || 'Candidate'}</strong></span>
+              <div 
+                style={{
+                  borderBottom: '1px solid #e2e8f0',
+                  paddingBottom: '10px',
+                  marginBottom: '16px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: '11px',
+                  color: '#64748b',
+                  flexShrink: 0,
+                }}
+              >
+                <span style={{ fontWeight: 600, color: '#334155' }}>{companySettings.companyName} • Offer of Employment</span>
+                <span>Candidate: <strong style={{ color: '#0f172a' }}>{offerData.employeeName || 'Candidate'}</strong></span>
               </div>
             )}
 
-            <div className="space-y-3 text-justify">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'justify' }}>
               <div>
-                <h3 className="font-bold text-[13.5px]">5. Company Policies</h3>
-                <p className="mt-0.5">
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>5. Company Policies</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
                   You shall comply with all company policies, procedures, regulatory requirements, and ethical standards, including compliance with applicable laws and regulations.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">6. Notice Period</h3>
-                <p className="mt-0.5">
-                  Either party may terminate this employment by providing <span className="font-semibold underline">{offerData.noticePeriod || '…………'}</span>’ written notice or salary in lieu thereof, subject to company policy.
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>6. Notice Period</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
+                  Either party may terminate this employment by providing <span style={{ fontWeight: 600, textDecoration: 'underline' }}>{offerData.noticePeriod || '…………'}</span>’ written notice or salary in lieu thereof, subject to company policy.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">7. Background Verification</h3>
-                <p className="mt-0.5">
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>7. Background Verification</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
                   This offer is subject to verification of your educational qualifications, previous employment details, and other relevant credentials. Any discrepancy may lead to withdrawal of this offer or termination of employment.
                 </p>
               </div>
             </div>
 
-            <p className="mt-4 text-justify">
+            <p style={{ margin: '14px 0 0 0', fontSize: '13px', lineHeight: '20px', textAlign: 'justify' }}>
               Kindly sign and return a copy of this letter as a token of your acceptance of the above terms and conditions.
             </p>
 
-            <p className="mt-2 text-justify">
+            <p style={{ margin: '8px 0 0 0', fontSize: '13px', lineHeight: '20px', textAlign: 'justify' }}>
               We look forward to welcoming you to {companySettings.companyName} and wish you a successful and rewarding career with us.
             </p>
 
@@ -313,16 +374,16 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
             <SignatoryBlock />
 
             {/* ACCEPTANCE SECTION */}
-            <div className="mt-5 pt-3.5 border-t border-slate-300">
-              <h3 className="font-bold text-[13.5px] mb-1.5 underline">Acceptance of Offer</h3>
-              <p className="text-justify mb-2.5 text-xs">
-                I, <span className="font-bold underline">{offerData.employeeName || '………………'}</span>, hereby accept the offer of employment with <span className="font-bold">{companySettings.companyName}</span> and agree to abide by the terms and conditions mentioned above.
+            <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #cbd5e1' }}>
+              <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: '0 0 6px 0', textDecoration: 'underline' }}>Acceptance of Offer</h3>
+              <p style={{ margin: '0 0 10px 0', fontSize: '12px', lineHeight: '17px', textAlign: 'justify' }}>
+                I, <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{offerData.employeeName || '………………'}</span>, hereby accept the offer of employment with <span style={{ fontWeight: 700 }}>{companySettings.companyName}</span> and agree to abide by the terms and conditions mentioned above.
               </p>
 
-              <div className="mt-3 space-y-1.5 font-mono text-xs">
-                <p>Signature:____________________</p>
-                <p>Name: <span className="font-serif font-semibold">{offerData.employeeName || '_______________________'}</span></p>
-                <p>Date: _______________________</p>
+              <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '5px', fontFamily: 'monospace', fontSize: '12px' }}>
+                <p style={{ margin: 0 }}>Signature:____________________</p>
+                <p style={{ margin: 0 }}>Name: <span style={{ fontWeight: 600 }}>{offerData.employeeName || '_______________________'}</span></p>
+                <p style={{ margin: 0 }}>Date: _______________________</p>
               </div>
             </div>
           </div>
@@ -331,92 +392,96 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
         </div>
       </div>
     );
-  }
+  };
 
   /* =========================================================================
-     2. APPOINTMENT LETTER (2 Pages) - EXACT WORDING FROM UPLOADED TEMPLATE
+     2. APPOINTMENT LETTER CONTENT (2 Pages)
      ========================================================================= */
-  if (documentType === 'appointment' && appointmentData) {
+  const renderAppointmentLetter = (isOffScreenPrint = false) => {
+    if (!appointmentData) return null;
     const ctcFormatted = typeof appointmentData.ctcAmount === 'number' 
       ? formatIndianCurrency(appointmentData.ctcAmount) 
       : appointmentData.ctcAmount;
 
     return (
-      <div id="printable-document" className="flex flex-col gap-8 print:gap-0 font-document text-slate-900 text-[13px] leading-relaxed">
+      <div 
+        id={isOffScreenPrint ? undefined : 'printable-document'} 
+        className={isOffScreenPrint ? undefined : 'flex flex-col gap-8 print:gap-0 font-document text-slate-900'}
+      >
         {/* PAGE 1 */}
         <div 
-          id="doc-page-1" 
-          className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
+          id={isOffScreenPrint ? undefined : 'doc-page-1'} 
+          className={isOffScreenPrint ? 'pdf-page' : 'a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto'}
           style={a4PageStyle}
         >
-          <div className="flex-1 flex flex-col">
-            {showLetterhead && <LetterheadHeader />}
+          <div style={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column' }}>
+            {showLetterhead && <LetterheadHeader isPrint={isOffScreenPrint} />}
 
-            <div className="mb-3">
-              <p className="font-medium text-xs">
-                <span className="font-bold">Date:</span> {formatDisplayDate(appointmentData.letterDate) || '………………..'}
+            <div style={{ marginBottom: '12px' }}>
+              <p style={{ margin: 0, fontSize: '12px', fontWeight: 500 }}>
+                <span style={{ fontWeight: 700 }}>Date:</span> {formatDisplayDate(appointmentData.letterDate) || '………………..'}
               </p>
               {appointmentData.referenceNo && (
-                <p className="text-[11px] text-slate-600 font-sans mt-0.5">
-                  <span className="font-semibold">Ref:</span> {appointmentData.referenceNo}
+                <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#475569' }}>
+                  <span style={{ fontWeight: 600 }}>Ref:</span> {appointmentData.referenceNo}
                 </p>
               )}
             </div>
 
-            <div className="mb-3.5 leading-snug text-xs">
-              <p className="font-bold">To,</p>
-              <p className="font-semibold">{appointmentData.employeeName || '………………………'}</p>
-              <div className="whitespace-pre-line text-slate-800">
+            <div style={{ marginBottom: '14px', fontSize: '12px', lineHeight: '16px' }}>
+              <p style={{ margin: 0, fontWeight: 700 }}>To,</p>
+              <p style={{ margin: 0, fontWeight: 600 }}>{appointmentData.employeeName || '………………………'}</p>
+              <div style={{ whiteSpace: 'pre-line', color: '#1e293b' }}>
                 {appointmentData.employeeAddress || '………………………..'}
               </div>
             </div>
 
-            <div className="text-center my-3">
-              <h2 className="text-[14px] font-bold underline tracking-wide">
+            <div style={{ textAlign: 'center', margin: '12px 0' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 700, textDecoration: 'underline', letterSpacing: '0.02em', margin: 0 }}>
                 Subject: Appointment Letter
               </h2>
             </div>
 
-            <p className="mb-2.5">
-              Dear <span className="font-semibold">{appointmentData.employeeName || '………………….'}</span>,
+            <p style={{ margin: '0 0 10px 0', fontSize: '13px', lineHeight: '20px' }}>
+              Dear <span style={{ fontWeight: 600 }}>{appointmentData.employeeName || '………………….'}</span>,
             </p>
 
-            <p className="mb-2.5 text-justify">
-              We are pleased to appoint you as <span className="font-bold underline">{appointmentData.designation || '……………………………………..'}</span> with <span className="font-bold">{companySettings.companyName}</span> effective from <span className="font-bold underline">{formatDisplayDate(appointmentData.effectiveDate) || '……………………..'}</span>, based on the discussions held with you and your acceptance of the terms and conditions outlined below.
+            <p style={{ margin: '0 0 10px 0', fontSize: '13px', lineHeight: '20px', textAlign: 'justify' }}>
+              We are pleased to appoint you as <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{appointmentData.designation || '……………………………………..'}</span> with <span style={{ fontWeight: 700 }}>{companySettings.companyName}</span> effective from <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{formatDisplayDate(appointmentData.effectiveDate) || '……………………..'}</span>, based on the discussions held with you and your acceptance of the terms and conditions outlined below.
             </p>
 
-            <div className="space-y-2.5 mt-2.5 text-justify">
+            <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'justify' }}>
               <div>
-                <h3 className="font-bold text-[13.5px]">1. Designation and Reporting</h3>
-                <p className="mt-0.5">
-                  You will be designated as <span className="font-bold underline">{appointmentData.designation || '……………………………..'}</span> and will be based at <span className="font-bold underline">{appointmentData.workLocation || '………………..'}</span>. You will report to <span className="font-bold underline">{appointmentData.reportingManager || '…………………………………….'}</span> or any other person as designated by the management from time to time.
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>1. Designation and Reporting</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
+                  You will be designated as <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{appointmentData.designation || '……………………………..'}</span> and will be based at <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{appointmentData.workLocation || '………………..'}</span>. You will report to <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{appointmentData.reportingManager || '…………………………………….'}</span> or any other person as designated by the management from time to time.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">2. Scope of Work</h3>
-                <p className="mt-0.5">
-                  Your responsibilities will include, but not be limited to, activities related to <span className="underline font-medium">{appointmentData.responsibilities || '……………………'}</span> associated with the company’s medical device and healthcare product portfolio. The company reserves the right to modify or expand your responsibilities based on business requirements.
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>2. Scope of Work</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
+                  Your responsibilities will include, but not be limited to, activities related to <span style={{ fontWeight: 500, textDecoration: 'underline' }}>{appointmentData.responsibilities || '……………………'}</span> associated with the company’s medical device and healthcare product portfolio. The company reserves the right to modify or expand your responsibilities based on business requirements.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">3. Compensation</h3>
-                <p className="mt-0.5">
-                  Your Cost to Company {appointmentData.ctcLabel || '……………'} will be INR <span className="font-bold underline">{ctcFormatted || '………………………………..'}</span> per annum, payable as per the company’s payroll policies. A detailed compensation structure will be provided separately. All statutory deductions such as Provident Fund, Professional Tax, Income Tax (TDS), and other applicable deductions will be made as per government regulations.
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>3. Compensation</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
+                  Your Cost to Company {appointmentData.ctcLabel || '……………'} will be INR <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{ctcFormatted || '………………………………..'}</span> per annum, payable as per the company’s payroll policies. A detailed compensation structure will be provided separately. All statutory deductions such as Provident Fund, Professional Tax, Income Tax (TDS), and other applicable deductions will be made as per government regulations.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">4. Probation Period</h3>
-                <p className="mt-0.5">
-                  You will be on probation for a period of <span className="font-semibold underline">{appointmentData.probationPeriod || '6 months'}</span> from the date of joining. During this period, your performance and suitability for the role will be evaluated. Upon satisfactory completion of the probation period, your appointment will be confirmed in writing.
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>4. Probation Period</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
+                  You will be on probation for a period of <span style={{ fontWeight: 600, textDecoration: 'underline' }}>{appointmentData.probationPeriod || '6 months'}</span> from the date of joining. During this period, your performance and suitability for the role will be evaluated. Upon satisfactory completion of the probation period, your appointment will be confirmed in writing.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">5. Working Hours and Leave</h3>
-                <p className="mt-0.5">
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>5. Working Hours and Leave</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
                   Your working hours, weekly offs, and leave entitlement will be governed by the company’s HR policies, which may be amended from time to time.
                 </p>
               </div>
@@ -428,53 +493,65 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
 
         {/* PAGE 2 */}
         <div 
-          id="doc-page-2" 
-          className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
+          id={isOffScreenPrint ? undefined : 'doc-page-2'} 
+          className={isOffScreenPrint ? 'pdf-page' : 'a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto'}
           style={a4PageStyle}
         >
-          <div className="flex-1 flex flex-col">
+          <div style={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column' }}>
             {showLetterhead && (
-              <div className="border-b border-slate-200 pb-2.5 mb-4 flex justify-between items-center text-[11px] text-slate-500 font-sans shrink-0">
-                <span className="font-semibold text-slate-700">{companySettings.companyName} • Appointment Letter</span>
-                <span>Employee: <strong className="text-slate-800">{appointmentData.employeeName || 'Employee'}</strong></span>
+              <div 
+                style={{
+                  borderBottom: '1px solid #e2e8f0',
+                  paddingBottom: '10px',
+                  marginBottom: '16px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: '11px',
+                  color: '#64748b',
+                  flexShrink: 0,
+                }}
+              >
+                <span style={{ fontWeight: 600, color: '#334155' }}>{companySettings.companyName} • Appointment Letter</span>
+                <span>Employee: <strong style={{ color: '#0f172a' }}>{appointmentData.employeeName || 'Employee'}</strong></span>
               </div>
             )}
 
-            <div className="space-y-2.5 text-justify">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'justify' }}>
               <div>
-                <h3 className="font-bold text-[13.5px]">6. Confidentiality and Intellectual Property</h3>
-                <p className="mt-0.5">
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>6. Confidentiality and Intellectual Property</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
                   During your employment, you may have access to confidential information relating to the company’s products, technology, clinical data, regulatory documentation, business strategies, customer databases, and partner relationships. You are required to maintain strict confidentiality of such information during and after your employment with the company.
                 </p>
-                <p className="mt-0.5">
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
                   Any intellectual property, invention, or development created during the course of your employment will remain the property of the company.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">7. Compliance with Laws and Policies</h3>
-                <p className="mt-0.5">
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>7. Compliance with Laws and Policies</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
                   As a medical device company, {companySettings.companyName} operates under strict regulatory and ethical standards. You are required to comply with all company policies, applicable healthcare regulations, and government laws, including guidelines related to medical device marketing, regulatory compliance, and ethical business practices.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">8. Transfer and Mobility</h3>
-                <p className="mt-0.5">
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>8. Transfer and Mobility</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
                   Your services may be transferred or assigned to any department, branch, project location, or associated business partner of the company depending on business requirements.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">9. Termination of Employment</h3>
-                <p className="mt-0.5">
-                  Either party may terminate the employment by providing <span className="font-semibold underline">{appointmentData.noticePeriod || '………….'}</span>’ written notice or salary in lieu thereof, subject to company policies. The company reserves the right to terminate your employment without notice in cases of misconduct, breach of confidentiality, violation of company policies, or non-compliance with applicable regulations.
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>9. Termination of Employment</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
+                  Either party may terminate the employment by providing <span style={{ fontWeight: 600, textDecoration: 'underline' }}>{appointmentData.noticePeriod || '………….'}</span>’ written notice or salary in lieu thereof, subject to company policies. The company reserves the right to terminate your employment without notice in cases of misconduct, breach of confidentiality, violation of company policies, or non-compliance with applicable regulations.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold text-[13.5px]">10. Background Verification</h3>
-                <p className="mt-0.5">
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: 0 }}>10. Background Verification</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '13px', lineHeight: '19px' }}>
                   This appointment is subject to verification of your educational qualifications, previous employment records, and other credentials. If any information provided by you is found to be false or misleading, the company reserves the right to terminate your employment immediately.
                 </p>
               </div>
@@ -484,20 +561,20 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
             <SignatoryBlock />
 
             {/* ACCEPTANCE OF APPOINTMENT */}
-            <div className="mt-4 pt-3 border-t border-slate-300">
-              <h3 className="font-bold text-[13.5px] mb-1.5 underline">Acceptance of Appointment</h3>
-              <p className="text-justify mb-1.5 text-xs">
+            <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #cbd5e1' }}>
+              <h3 style={{ fontSize: '13.5px', fontWeight: 700, margin: '0 0 6px 0', textDecoration: 'underline' }}>Acceptance of Appointment</h3>
+              <p style={{ margin: '0 0 6px 0', fontSize: '12px', lineHeight: '17px', textAlign: 'justify' }}>
                 Please sign and return a copy of this letter as a token of your acceptance of the terms and conditions mentioned above.
               </p>
-              <p className="text-justify mb-3 text-xs">
+              <p style={{ margin: '0 0 10px 0', fontSize: '12px', lineHeight: '17px', textAlign: 'justify' }}>
                 We welcome you to {companySettings.companyName} and look forward to your valuable contribution towards the growth of the organization and advancement of healthcare solutions.
               </p>
 
-              <div className="mt-3">
-                <p className="font-bold text-xs">Signature of candidate: ____________________</p>
-                <div className="mt-1.5 text-xs text-slate-600 font-sans">
-                  <span>Name: <strong className="text-slate-800">{appointmentData.employeeName}</strong></span>
-                  <span className="mx-3">•</span>
+              <div style={{ marginTop: '10px' }}>
+                <p style={{ margin: 0, fontWeight: 700, fontSize: '12px' }}>Signature of candidate: ____________________</p>
+                <div style={{ marginTop: '4px', fontSize: '12px', color: '#475569' }}>
+                  <span>Name: <strong style={{ color: '#0f172a' }}>{appointmentData.employeeName}</strong></span>
+                  <span style={{ margin: '0 8px' }}>•</span>
                   <span>Date: ____________________</span>
                 </div>
               </div>
@@ -508,62 +585,65 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
         </div>
       </div>
     );
-  }
+  };
 
   /* =========================================================================
-     3. PROMOTION LETTER (1 Page) - EXACT WORDING FROM UPLOADED TEMPLATE
+     3. PROMOTION LETTER CONTENT (1 Page)
      ========================================================================= */
-  if (documentType === 'promotion' && promotionData) {
+  const renderPromotionLetter = (isOffScreenPrint = false) => {
+    if (!promotionData) return null;
+
     return (
-      <div id="printable-document" className="font-document text-slate-900 text-[13.5px] leading-relaxed">
+      <div 
+        id={isOffScreenPrint ? undefined : 'printable-document'} 
+        className={isOffScreenPrint ? undefined : 'font-document text-slate-900'}
+      >
         <div 
-          id="doc-page-1" 
-          className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
+          id={isOffScreenPrint ? undefined : 'doc-page-1'} 
+          className={isOffScreenPrint ? 'pdf-page' : 'a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto'}
           style={a4PageStyle}
         >
-          <div className="flex-1 flex flex-col">
-            {showLetterhead && <LetterheadHeader />}
+          <div style={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column' }}>
+            {showLetterhead && <LetterheadHeader isPrint={isOffScreenPrint} />}
 
-            <div className="mb-3.5">
-              <p className="font-medium text-xs">
-                <span className="font-bold">Date:-</span> {formatDisplayDate(promotionData.letterDate) || '……………………'}
+            <div style={{ marginBottom: '14px' }}>
+              <p style={{ margin: 0, fontSize: '12px', fontWeight: 500 }}>
+                <span style={{ fontWeight: 700 }}>Date:-</span> {formatDisplayDate(promotionData.letterDate) || '……………………'}
               </p>
               {promotionData.referenceNo && (
-                <p className="text-[11px] text-slate-600 font-sans mt-0.5">
-                  <span className="font-semibold">Ref:</span> {promotionData.referenceNo}
+                <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#475569' }}>
+                  <span style={{ fontWeight: 600 }}>Ref:</span> {promotionData.referenceNo}
                 </p>
               )}
             </div>
 
-            <div className="mb-4 leading-snug text-xs">
-              <p className="font-bold">To,</p>
-              <p className="font-semibold">{promotionData.employeeName || '……………………..'}</p>
-              <div className="whitespace-pre-line text-slate-800">
+            <div style={{ marginBottom: '16px', fontSize: '12px', lineHeight: '16px' }}>
+              <p style={{ margin: 0, fontWeight: 700 }}>To,</p>
+              <p style={{ margin: 0, fontWeight: 600 }}>{promotionData.employeeName || '……………………..'}</p>
+              <div style={{ whiteSpace: 'pre-line', color: '#1e293b' }}>
                 {promotionData.employeeAddress || '…………………………..'}
               </div>
             </div>
 
-            <div className="text-center my-4">
-              <h2 className="text-[14px] font-bold underline tracking-wide">
+            <div style={{ textAlign: 'center', margin: '16px 0' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 700, textDecoration: 'underline', letterSpacing: '0.02em', margin: 0 }}>
                 Subject: Promotion to {promotionData.newDesignation || '……………………………'}
               </h2>
             </div>
 
-            <p className="mb-3">
-              Dear <span className="font-semibold">{promotionData.employeeName || '…………………….'}</span>,
+            <p style={{ margin: '0 0 12px 0', fontSize: '13px', lineHeight: '20px' }}>
+              Dear <span style={{ fontWeight: 600 }}>{promotionData.employeeName || '…………………….'}</span>,
             </p>
 
-            <p className="mb-3 text-justify leading-relaxed">
-              We are pleased to inform you of your promotion to the position of <span className="font-bold underline">{promotionData.newDesignation || '…………………………'}</span> with <span className="font-bold">{companySettings.companyName}</span>, effective <span className="font-bold underline">{formatDisplayDate(promotionData.effectiveDate) || '……………………...'}</span>. This decision has been made in recognition of your outstanding performance, dedication, and contribution to our team.
+            <p style={{ margin: '0 0 14px 0', fontSize: '13px', lineHeight: '20px', textAlign: 'justify' }}>
+              We are pleased to inform you of your promotion to the position of <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{promotionData.newDesignation || '…………………………'}</span> with <span style={{ fontWeight: 700 }}>{companySettings.companyName}</span>, effective <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{formatDisplayDate(promotionData.effectiveDate) || '……………………...'}</span>. This decision has been made in recognition of your outstanding performance, dedication, and contribution to our team.
             </p>
 
-            <div className="space-y-3 mt-4 text-justify">
-              <div>
-                <h3 className="font-bold text-[14px] underline">1. Position and Duties</h3>
-                <p className="mt-1.5 leading-relaxed">
-                  In your new role as <span className="font-bold underline">{promotionData.newDesignation || '………………………'}</span>, you will be responsible for <span className="underline font-medium">{promotionData.responsibilities || '………………………….'}</span>. We believe in your abilities and trust that you will continue to excel and play a key role in our organization's growth.
-                </p>
-              </div>
+            <div style={{ marginTop: '14px', textAlign: 'justify' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 700, textDecoration: 'underline', margin: 0 }}>1. Position and Duties</h3>
+              <p style={{ margin: '6px 0 0 0', fontSize: '13px', lineHeight: '20px' }}>
+                In your new role as <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{promotionData.newDesignation || '………………………'}</span>, you will be responsible for <span style={{ fontWeight: 500, textDecoration: 'underline' }}>{promotionData.responsibilities || '………………………….'}</span>. We believe in your abilities and trust that you will continue to excel and play a key role in our organization's growth.
+              </p>
             </div>
 
             {/* SIGNATURE SECTION */}
@@ -574,52 +654,56 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
         </div>
       </div>
     );
-  }
+  };
 
   /* =========================================================================
-     4. RELIEVING LETTER (1 Page) - EXACT WORDING FROM UPLOADED TEMPLATE
+     4. RELIEVING LETTER CONTENT (1 Page)
      ========================================================================= */
-  if (documentType === 'relieving' && relievingData) {
+  const renderRelievingLetter = (isOffScreenPrint = false) => {
+    if (!relievingData) return null;
     const isFemale = relievingData.gender === 'Female';
     const pronounPoss = isFemale ? 'her' : 'his';
     const pronounObj = isFemale ? 'her' : 'him';
 
     return (
-      <div id="printable-document" className="font-document text-slate-900 text-[13.5px] leading-relaxed">
+      <div 
+        id={isOffScreenPrint ? undefined : 'printable-document'} 
+        className={isOffScreenPrint ? undefined : 'font-document text-slate-900'}
+      >
         <div 
-          id="doc-page-1" 
-          className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
+          id={isOffScreenPrint ? undefined : 'doc-page-1'} 
+          className={isOffScreenPrint ? 'pdf-page' : 'a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto'}
           style={a4PageStyle}
         >
-          <div className="flex-1 flex flex-col">
-            {showLetterhead && <LetterheadHeader />}
+          <div style={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column' }}>
+            {showLetterhead && <LetterheadHeader isPrint={isOffScreenPrint} />}
 
-            <div className="flex justify-end mb-4">
-              <p className="font-medium text-xs">
-                <span className="font-bold">Date: -</span> {formatDisplayDate(relievingData.letterDate) || '………………….'}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+              <p style={{ margin: 0, fontSize: '12px', fontWeight: 500 }}>
+                <span style={{ fontWeight: 700 }}>Date: -</span> {formatDisplayDate(relievingData.letterDate) || '………………….'}
               </p>
             </div>
 
-            <div className="text-center my-5">
-              <h2 className="text-[14px] font-bold underline tracking-wider uppercase">
+            <div style={{ textAlign: 'center', margin: '20px 0' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 700, textDecoration: 'underline', letterSpacing: '0.04em', textTransform: 'uppercase', margin: 0 }}>
                 TO WHOM SO EVER IT MAY CONCERN
               </h2>
             </div>
 
-            <div className="space-y-4 text-justify leading-relaxed mt-4">
-              <p>
-                This is to certify that <span className="font-bold underline">{relievingData.employeeName || '……………………………'}</span> has worked with us from <span className="font-semibold underline">{formatDisplayDate(relievingData.fromDate) || '………………………………..'}</span> to <span className="font-semibold underline">{formatDisplayDate(relievingData.toDate) || '…………………………………'}</span> and was designated as <span className="font-bold underline">{relievingData.designation || '……………………………………..'}</span> at the time of leaving the organization.
+            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '13px', lineHeight: '21px', textAlign: 'justify' }}>
+              <p style={{ margin: 0 }}>
+                This is to certify that <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{relievingData.employeeName || '……………………………'}</span> has worked with us from <span style={{ fontWeight: 600, textDecoration: 'underline' }}>{formatDisplayDate(relievingData.fromDate) || '………………………………..'}</span> to <span style={{ fontWeight: 600, textDecoration: 'underline' }}>{formatDisplayDate(relievingData.toDate) || '…………………………………'}</span> and was designated as <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{relievingData.designation || '……………………………………..'}</span> at the time of leaving the organization.
               </p>
 
-              <p>
+              <p style={{ margin: 0 }}>
                 During {pronounPoss} above tenure we found {pronounObj} time to be regular, honest and diligent in duties and responsibilities.
               </p>
 
-              <p>
-                This is to certify that <span className="font-bold underline">{relievingData.employeeName || '…………………………………………….'}</span> holds no liabilities towards the company.
+              <p style={{ margin: 0 }}>
+                This is to certify that <span style={{ fontWeight: 700, textDecoration: 'underline' }}>{relievingData.employeeName || '…………………………………………….'}</span> holds no liabilities towards the company.
               </p>
 
-              <p>
+              <p style={{ margin: 0 }}>
                 We wish {pronounObj} all success in {pronounPoss} future endeavour.
               </p>
             </div>
@@ -638,11 +722,46 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
         </div>
       </div>
     );
-  }
+  };
+
+  const renderActiveLetter = (isOffScreenPrint: boolean) => {
+    switch (documentType) {
+      case 'offer':
+        return renderOfferLetter(isOffScreenPrint);
+      case 'appointment':
+        return renderAppointmentLetter(isOffScreenPrint);
+      case 'promotion':
+        return renderPromotionLetter(isOffScreenPrint);
+      case 'relieving':
+        return renderRelievingLetter(isOffScreenPrint);
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="p-8 text-center text-slate-500 bg-white rounded-lg border border-slate-200">
-      Please configure the document details to view preview.
-    </div>
+    <>
+      {/* 1. Interactive Responsive Screen Preview */}
+      <div className="relative">
+        {renderActiveLetter(false)}
+      </div>
+
+      {/* 2. Isolated, Dedicated Off-Screen Print DOM Container strictly for PDF export */}
+      <div 
+        id="pdf-render-target" 
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: '0',
+          width: '794px',
+          background: '#ffffff',
+          pointerEvents: 'none',
+          zIndex: -1,
+        }}
+        aria-hidden="true"
+      >
+        {renderActiveLetter(true)}
+      </div>
+    </>
   );
 };
