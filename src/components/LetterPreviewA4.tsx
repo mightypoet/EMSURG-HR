@@ -24,28 +24,35 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
 }) => {
   // Common Letterhead Header component
   const LetterheadHeader = () => (
-    <div className="border-b-2 border-teal-700/80 pb-3 mb-4 shrink-0">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1 overflow-hidden shrink-0">
+    <div className="border-b-2 border-teal-700/80 pb-3 mb-4 shrink-0" style={{ borderBottomWidth: '2px', borderBottomColor: '#0f766e' }}>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          {/* Strict Fixed Logo Dimensions */}
+          <div style={{ width: '140px', maxWidth: '140px', height: 'auto', maxHeight: '55px', flexShrink: 0, overflow: 'hidden' }}>
             <img
               src="https://0e8dtpaport9ku82.public.blob.vercel-storage.com/emsurg_logo_cropped.png"
               alt="Emsurg Healthcare Official Logo"
-              className="max-h-full max-w-full object-contain"
+              style={{ width: '140px', maxWidth: '140px', height: 'auto', maxHeight: '55px', objectFit: 'contain', display: 'block' }}
               crossOrigin="anonymous"
             />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-slate-900 font-sans uppercase leading-tight">
+            <h1 
+              style={{ fontSize: '18px', lineHeight: '22px' }} 
+              className="font-bold tracking-tight text-slate-900 font-sans uppercase m-0 p-0"
+            >
               {companySettings.companyName}
             </h1>
-            <p className="text-[11.5px] text-teal-800 font-semibold tracking-wide font-sans mt-0.5">
+            <p 
+              style={{ fontSize: '11px', lineHeight: '14px' }} 
+              className="text-teal-800 font-semibold tracking-wide font-sans mt-0.5 m-0 p-0"
+            >
               Medical Devices &amp; Healthcare Solutions
             </p>
           </div>
         </div>
 
-        <div className="text-right text-[10px] text-slate-600 font-sans leading-tight">
+        <div style={{ fontSize: '10px', lineHeight: '13px' }} className="text-right text-slate-600 font-sans shrink-0">
           <p className="font-semibold text-slate-800">Regd. Office: {companySettings.addressLine1}</p>
           <p className="text-slate-700">{companySettings.cityStateZip}</p>
           <p className="text-slate-600 mt-0.5"><span className="font-medium text-slate-700">CIN:</span> {companySettings.cin}</p>
@@ -147,6 +154,23 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
     );
   };
 
+  const a4PageStyle: React.CSSProperties = {
+    width: '794px',
+    minWidth: '794px',
+    maxWidth: '794px',
+    height: '1123px',
+    minHeight: '1123px',
+    maxHeight: '1123px',
+    boxSizing: 'border-box',
+    padding: '44px 50px 36px 50px',
+    overflow: 'hidden',
+    position: 'relative',
+    background: '#ffffff',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  };
+
   /* =========================================================================
      1. OFFER LETTER (2 Pages) - EXACT WORDING FROM UPLOADED TEMPLATE
      ========================================================================= */
@@ -161,19 +185,7 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
         <div 
           id="doc-page-1" 
           className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
-          style={{
-            width: '794px',
-            minHeight: '1123px',
-            height: '1123px',
-            maxHeight: '1123px',
-            boxSizing: 'border-box',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            padding: '48px 56px 40px 56px',
-          }}
+          style={a4PageStyle}
         >
           <div className="flex-1 flex flex-col">
             {showLetterhead && <LetterheadHeader />}
@@ -256,19 +268,7 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
         <div 
           id="doc-page-2" 
           className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
-          style={{
-            width: '794px',
-            minHeight: '1123px',
-            height: '1123px',
-            maxHeight: '1123px',
-            boxSizing: 'border-box',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            padding: '48px 56px 40px 56px',
-          }}
+          style={a4PageStyle}
         >
           <div className="flex-1 flex flex-col">
             {showLetterhead && (
@@ -347,19 +347,7 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
         <div 
           id="doc-page-1" 
           className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
-          style={{
-            width: '794px',
-            minHeight: '1123px',
-            height: '1123px',
-            maxHeight: '1123px',
-            boxSizing: 'border-box',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            padding: '48px 56px 40px 56px',
-          }}
+          style={a4PageStyle}
         >
           <div className="flex-1 flex flex-col">
             {showLetterhead && <LetterheadHeader />}
@@ -442,19 +430,7 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
         <div 
           id="doc-page-2" 
           className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
-          style={{
-            width: '794px',
-            minHeight: '1123px',
-            height: '1123px',
-            maxHeight: '1123px',
-            boxSizing: 'border-box',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            padding: '48px 56px 40px 56px',
-          }}
+          style={a4PageStyle}
         >
           <div className="flex-1 flex flex-col">
             {showLetterhead && (
@@ -543,19 +519,7 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
         <div 
           id="doc-page-1" 
           className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
-          style={{
-            width: '794px',
-            minHeight: '1123px',
-            height: '1123px',
-            maxHeight: '1123px',
-            boxSizing: 'border-box',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            padding: '48px 56px 40px 56px',
-          }}
+          style={a4PageStyle}
         >
           <div className="flex-1 flex flex-col">
             {showLetterhead && <LetterheadHeader />}
@@ -625,19 +589,7 @@ export const LetterPreviewA4: React.FC<LetterPreviewA4Props> = ({
         <div 
           id="doc-page-1" 
           className="a4-page print-page bg-white shadow-lg border border-slate-200 mx-auto"
-          style={{
-            width: '794px',
-            minHeight: '1123px',
-            height: '1123px',
-            maxHeight: '1123px',
-            boxSizing: 'border-box',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            padding: '48px 56px 40px 56px',
-          }}
+          style={a4PageStyle}
         >
           <div className="flex-1 flex flex-col">
             {showLetterhead && <LetterheadHeader />}

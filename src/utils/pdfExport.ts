@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas-pro';
+import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
 export interface ExportPdfOptions {
@@ -8,7 +8,6 @@ export interface ExportPdfOptions {
 
 /**
  * Converts modern CSS colors (like oklch, oklab, color(srgb...)) into standard browser rgb/rgba/hex
- * using a fast 2D canvas color serializer.
  */
 function normalizeColorString(rawColor: string, ctx: CanvasRenderingContext2D | null): string {
   if (!rawColor || typeof rawColor !== 'string') return rawColor;
@@ -17,14 +16,13 @@ function normalizeColorString(rawColor: string, ctx: CanvasRenderingContext2D | 
   }
 
   if (!ctx) {
-    // Fallback: strip oklch or convert to a safe neutral/teal fallback if canvas context is unavailable
     if (rawColor.includes('teal')) return '#0f766e';
     if (rawColor.includes('slate')) return '#334155';
     return '#0f172a';
   }
 
   try {
-    ctx.fillStyle = '#ffffff'; // reset
+    ctx.fillStyle = '#ffffff';
     ctx.fillStyle = rawColor;
     const normalized = ctx.fillStyle;
     return normalized && normalized !== '#ffffff' ? normalized : rawColor;
@@ -34,8 +32,7 @@ function normalizeColorString(rawColor: string, ctx: CanvasRenderingContext2D | 
 }
 
 /**
- * Sanitizes all styles and elements inside the cloned document before rendering canvas,
- * replacing any modern CSS functions like oklch with standard sRGB hex/rgba.
+ * Sanitizes all styles and elements inside the cloned document before rendering canvas
  */
 function sanitizeClonedDocument(clonedDoc: Document) {
   try {
@@ -44,7 +41,6 @@ function sanitizeClonedDocument(clonedDoc: Document) {
     canvas.height = 1;
     const ctx = canvas.getContext('2d');
 
-    // 1. Sanitize all <style> elements in cloned document
     const styleTags = Array.from(clonedDoc.querySelectorAll('style'));
     styleTags.forEach((styleTag) => {
       if (styleTag.textContent && (styleTag.textContent.includes('oklch') || styleTag.textContent.includes('oklab'))) {
@@ -54,7 +50,6 @@ function sanitizeClonedDocument(clonedDoc: Document) {
       }
     });
 
-    // 2. Traverse all elements and normalize computed/inline color styles
     const allElements = Array.from(clonedDoc.querySelectorAll('*')) as HTMLElement[];
     const colorProps = [
       'color',
@@ -72,16 +67,12 @@ function sanitizeClonedDocument(clonedDoc: Document) {
 
     allElements.forEach((el) => {
       if (!el.style) return;
-      
-      // Inline styles
       for (const prop of colorProps) {
         const val = (el.style as any)[prop];
         if (val && typeof val === 'string' && (val.includes('oklch') || val.includes('oklab'))) {
           (el.style as any)[prop] = normalizeColorString(val, ctx);
         }
       }
-
-      // Check SVG fill / stroke attributes
       if (el.hasAttribute('fill')) {
         const fill = el.getAttribute('fill');
         if (fill && (fill.includes('oklch') || fill.includes('oklab'))) {
@@ -100,9 +91,89 @@ function sanitizeClonedDocument(clonedDoc: Document) {
   }
 }
 
+/**
+ * Single-element direct capture to PDF
+ */
+export const exportToPdf = async (elementId: string, filename: string): Promise<boolean> => {
+  try {
+    const element = document.getElementById(elementId) || (document.querySelector('.a4-page') as HTMLElement);
+    if (!element) {
+      console.warn(`Element with ID ${elementId} not found for exportToPdf.`);
+      return false;
+    }
+
+    // Wait for all images inside to load
+    const images = Array.from(element.querySelectorAll('img'));
+    await Promise.all(
+      images.map((img) => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          setTimeout(resolve, 2000);
+        });
+      })
+    );
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      width: 794,
+      height: 1123,
+      windowWidth: 794,
+      windowHeight: 1123,
+      scrollX: 0,
+      scrollY: 0,
+      onclone: (clonedDoc) => {
+        const clonedPage = (clonedDoc.getElementById(elementId) || clonedDoc.querySelector('.a4-page')) as HTMLElement;
+        if (clonedPage) {
+          clonedPage.style.transform = 'none';
+          clonedPage.style.margin = '0 auto';
+          clonedPage.style.width = '794px';
+          clonedPage.style.minWidth = '794px';
+          clonedPage.style.maxWidth = '794px';
+          clonedPage.style.height = '1123px';
+          clonedPage.style.minHeight = '1123px';
+          clonedPage.style.maxHeight = '1123px';
+          clonedPage.style.boxSizing = 'border-box';
+        }
+        sanitizeClonedDocument(clonedDoc);
+      },
+    });
+
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+    const cleanFileName = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+    pdf.save(cleanFileName);
+    return true;
+  } catch (error) {
+    console.error('exportToPdf error:', error);
+    window.print();
+    return false;
+  }
+};
+
+/**
+ * Multi-page document export to PDF
+ */
 export async function exportDocumentToPdf({ fileName, elementIds }: ExportPdfOptions): Promise<boolean> {
   try {
-    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+    });
+
     const pdfWidth = 210; // A4 width in mm
     const pdfHeight = 297; // A4 height in mm
 
@@ -128,21 +199,23 @@ export async function exportDocumentToPdf({ fileName, elementIds }: ExportPdfOpt
           return new Promise<void>((resolve) => {
             img.onload = () => resolve();
             img.onerror = () => resolve();
-            // Timeout safety in case an external image fails
-            setTimeout(resolve, 2500);
+            setTimeout(resolve, 2000);
           });
         })
       );
 
-      // Render the DOM element with 1:1 fixed 794px width without zoom/transform distortion
+      // Render the DOM element with 1:1 fixed 794x1123 standard A4 without zoom/transform distortion
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        logging: false,
         backgroundColor: '#ffffff',
+        width: 794,
+        height: 1123,
         windowWidth: 794,
-        imageTimeout: 10000,
+        windowHeight: 1123,
+        scrollX: 0,
+        scrollY: 0,
         onclone: (clonedDoc) => {
           // Reset any zoom or responsive transform applied to preview wrapper
           const allTargets = Array.from(clonedDoc.querySelectorAll('.a4-page')) as HTMLElement[];
@@ -150,13 +223,14 @@ export async function exportDocumentToPdf({ fileName, elementIds }: ExportPdfOpt
             target.style.transform = 'none';
             target.style.margin = '0 auto';
             target.style.width = '794px';
+            target.style.minWidth = '794px';
+            target.style.maxWidth = '794px';
             target.style.height = '1123px';
             target.style.minHeight = '1123px';
             target.style.maxHeight = '1123px';
             target.style.boxSizing = 'border-box';
           });
 
-          // Also check parent wrapper transforms
           const parentWrappers = Array.from(clonedDoc.querySelectorAll('[style*="transform"]')) as HTMLElement[];
           parentWrappers.forEach((el) => {
             if (el.style.transform && el.style.transform.includes('scale')) {
@@ -168,8 +242,8 @@ export async function exportDocumentToPdf({ fileName, elementIds }: ExportPdfOpt
         },
       });
 
-      const imgData = canvas.toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       pagesRendered++;
     }
 
@@ -183,7 +257,6 @@ export async function exportDocumentToPdf({ fileName, elementIds }: ExportPdfOpt
     return true;
   } catch (error) {
     console.error('PDF generation error:', error);
-    // Fallback: trigger standard browser print dialog
     window.print();
     return false;
   }
@@ -191,7 +264,7 @@ export async function exportDocumentToPdf({ fileName, elementIds }: ExportPdfOpt
 
 /**
  * Generates standardized filename
- * e.g. Emsurg_Offer_Letter_Swarnali_Dey.pdf
+ * e.g. Emsurg_Offer_Letter_Kavita_Menon.pdf
  */
 export function generateDocumentFileName(type: string, employeeName: string): string {
   const cleanName = (employeeName || 'Candidate')
