@@ -20,6 +20,18 @@ import { LetterHistory } from './components/LetterHistory';
 import { EmailCenter, SendEmailModal } from './components/EmailCenter';
 import { SettingsView } from './components/SettingsView';
 import { DocumentViewModal } from './components/DocumentViewModal';
+import { SupabaseStatusBadge } from './components/SupabaseStatusBadge';
+import { 
+  getEmployees, 
+  createEmployee, 
+  updateEmployee, 
+  deleteEmployee 
+} from './services/employeeService';
+import { 
+  getLetters, 
+  saveLetter, 
+  deleteLetter 
+} from './services/letterService';
 import { exportDocumentToPdf } from './utils/pdfExport';
 import { Building2, ShieldCheck, HeartPulse } from 'lucide-react';
 
@@ -93,6 +105,27 @@ export default function App() {
   const [emailingDoc, setEmailingDoc] = useState<DocumentRecord | null>(null);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
+  // Initial Supabase Sync on mount
+  useEffect(() => {
+    let isMounted = true;
+
+    getEmployees().then((res) => {
+      if (isMounted && res.data && res.data.length > 0) {
+        setEmployees(res.data);
+      }
+    });
+
+    getLetters().then((res) => {
+      if (isMounted && res.data && res.data.length > 0) {
+        setDocuments(res.data);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Sync to local storage
   useEffect(() => {
     localStorage.setItem('emsurg_employees', JSON.stringify(employees));
@@ -113,14 +146,17 @@ export default function App() {
   // Employee Handlers
   const handleAddEmployee = (emp: Employee) => {
     setEmployees((prev) => [emp, ...prev]);
+    createEmployee(emp).catch((err) => console.warn('createEmployee error:', err));
   };
 
   const handleUpdateEmployee = (updated: Employee) => {
     setEmployees((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
+    updateEmployee(updated).catch((err) => console.warn('updateEmployee error:', err));
   };
 
   const handleDeleteEmployee = (empId: string) => {
     setEmployees((prev) => prev.filter((e) => e.id !== empId));
+    deleteEmployee(empId).catch((err) => console.warn('deleteEmployee error:', err));
   };
 
   // Document Handlers
@@ -134,10 +170,12 @@ export default function App() {
       }
       return [newDoc, ...prev];
     });
+    saveLetter(newDoc).catch((err) => console.warn('saveLetter error:', err));
   };
 
   const handleDeleteDocument = (docId: string) => {
     setDocuments((prev) => prev.filter((d) => d.id !== docId));
+    deleteLetter(docId).catch((err) => console.warn('deleteLetter error:', err));
   };
 
   // Launch letter generator for an employee
@@ -218,6 +256,7 @@ export default function App() {
             onUpdateCompanySettings={setCompanySettings}
             onSaveDocument={handleSaveDocument}
             onOpenEmailModal={handleTriggerEmailDoc}
+            onEmailSuccess={handleEmailSuccess}
           />
         )}
 
@@ -266,8 +305,11 @@ export default function App() {
             <span className="text-slate-600">Admin &amp; HR Department</span>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px] text-slate-500">
+          <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
+            <SupabaseStatusBadge variant="footer" />
+            <span>•</span>
             <span>CIN: <span className="font-mono text-slate-700">{companySettings.cin}</span></span>
+            <span>•</span>
             <span>Authorized Signatory: <strong className="text-slate-700">{companySettings.signatoryName}</strong></span>
           </div>
         </div>

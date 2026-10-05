@@ -11,6 +11,7 @@ import {
 } from '../types';
 import { LetterPreviewA4 } from './LetterPreviewA4';
 import { exportDocumentToPdf, generateDocumentFileName } from '../utils/pdfExport';
+import { executeSendViaEmailWorkflow } from '../utils/emailDispatcher';
 import { 
   FileText, 
   Download, 
@@ -29,7 +30,9 @@ import {
   RotateCcw,
   Check,
   ChevronDown,
-  ShieldCheck
+  ShieldCheck,
+  Send,
+  Loader2
 } from 'lucide-react';
 import { formatIndianCurrency } from '../utils/numberToWords';
 import { defaultCompanySettings } from '../data/initialData';
@@ -42,6 +45,7 @@ interface LetterGeneratorProps {
   onUpdateCompanySettings?: (settings: CompanySettings) => void;
   onSaveDocument: (record: DocumentRecord) => void;
   onOpenEmailModal: (doc: DocumentRecord) => void;
+  onEmailSuccess?: (emailLog: any, docId?: string) => void;
 }
 
 export const LetterGenerator: React.FC<LetterGeneratorProps> = ({
@@ -52,6 +56,7 @@ export const LetterGenerator: React.FC<LetterGeneratorProps> = ({
   onUpdateCompanySettings,
   onSaveDocument,
   onOpenEmailModal,
+  onEmailSuccess,
 }) => {
   const [docType, setDocType] = useState<DocumentType>(initialType);
   const [selectedEmpId, setSelectedEmpId] = useState<string>(initialEmployee?.id || '');
@@ -59,6 +64,7 @@ export const LetterGenerator: React.FC<LetterGeneratorProps> = ({
   const [showLetterhead, setShowLetterhead] = useState<boolean>(true);
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
+  const [isSendingEmail, setIsSendingEmail] = useState<boolean>(false);
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -349,15 +355,60 @@ export const LetterGenerator: React.FC<LetterGeneratorProps> = ({
     window.print();
   };
 
-  // Section 12: Email Action
-  const handleEmailDirectly = () => {
+  // Section 12: Enhanced Email Action
+  const handleEmailDirectly = async (clientType: 'gmail' | 'mailto' = 'gmail') => {
+    // 1. Check if recipient email exists
+    let targetEmail = '';
+    if (docType === 'offer') targetEmail = offerForm.employeeEmail?.trim();
+    else if (docType === 'promotion') targetEmail = promotionForm.employeeEmail?.trim();
+    else if (docType === 'appointment') targetEmail = appointmentForm.employeeEmail?.trim();
+    else if (docType === 'relieving') targetEmail = relievingForm.employeeEmail?.trim();
+
+    if (!targetEmail) {
+      setErrors((prev) => ({
+        ...prev,
+        employeeEmail: "Recipient email address is required to dispatch letter.",
+      }));
+      showToast("Please provide the recipient's email address first.");
+      return;
+    }
+
     if (!validateCurrentDocument()) {
       showToast('Please complete required fields before emailing.');
       return;
     }
-    const docRecord = createDocumentRecord('Draft');
+
+    setIsSendingEmail(true);
+    const docRecord = createDocumentRecord('Emailed');
     onSaveDocument(docRecord);
-    onOpenEmailModal(docRecord);
+
+    const elementIds = docType === 'offer' || docType === 'appointment'
+      ? ['doc-page-1', 'doc-page-2']
+      : ['doc-page-1'];
+
+    try {
+      const result = await executeSendViaEmailWorkflow({
+        docRecord,
+        companySettings,
+        elementIds,
+        recipientEmail: targetEmail,
+        preferredClient: clientType,
+      });
+
+      if (result.success) {
+        showToast('PDF downloaded! Attach the downloaded letter and click Send.');
+        if (result.emailLog && onEmailSuccess) {
+          onEmailSuccess(result.emailLog, docRecord.id);
+        }
+      } else if (result.error) {
+        showToast(result.error);
+      }
+    } catch (err) {
+      console.error('Email dispatch error:', err);
+      showToast('Redirected to email composer.');
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   // Copy text to clipboard
@@ -877,6 +928,20 @@ export const LetterGenerator: React.FC<LetterGeneratorProps> = ({
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Appointee Email (for direct dispatch)
+                      </label>
+                      <input
+                        type="email"
+                        value={appointmentForm.employeeEmail}
+                        onChange={(e) => setAppointmentForm({ ...appointmentForm, employeeEmail: e.target.value })}
+                        className="w-full text-xs px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                        placeholder="e.g. appointee@gmail.com"
+                      />
+                      {errors.employeeEmail && <p className="text-[11px] text-red-600 mt-1">{errors.employeeEmail}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
                         Residential Address *
                       </label>
                       <textarea
@@ -1039,6 +1104,20 @@ export const LetterGenerator: React.FC<LetterGeneratorProps> = ({
                         />
                         {errors.employeeName && <p className="text-[11px] text-red-600 mt-1">{errors.employeeName}</p>}
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Employee Email (for direct dispatch)
+                      </label>
+                      <input
+                        type="email"
+                        value={relievingForm.employeeEmail}
+                        onChange={(e) => setRelievingForm({ ...relievingForm, employeeEmail: e.target.value })}
+                        className="w-full text-xs px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                        placeholder="e.g. employee@gmail.com"
+                      />
+                      {errors.employeeEmail && <p className="text-[11px] text-red-600 mt-1">{errors.employeeEmail}</p>}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1298,11 +1377,22 @@ export const LetterGenerator: React.FC<LetterGeneratorProps> = ({
               </button>
 
               <button
-                onClick={handleEmailDirectly}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 shadow-xs transition-colors cursor-pointer"
+                disabled={isSendingEmail || isGeneratingPdf}
+                onClick={() => handleEmailDirectly('gmail')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                title="Download PDF and open Gmail compose with formal email draft"
               >
-                <Mail className="w-3.5 h-3.5" />
-                <span>Send via Email</span>
+                {isSendingEmail ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Preparing Email...</span>
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Send via Email</span>
+                  </>
+                )}
               </button>
 
               <button

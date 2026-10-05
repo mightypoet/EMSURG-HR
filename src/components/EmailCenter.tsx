@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { EmailLog, DocumentRecord, CompanySettings } from '../types';
 import { formatDisplayDate } from '../utils/numberToWords';
+import { 
+  buildCorporateEmailDraft, 
+  buildGmailComposeUrl, 
+  buildMailtoUrl 
+} from '../utils/emailDispatcher';
+import { exportDocumentToPdf } from '../utils/pdfExport';
 import { 
   Mail, 
   Send, 
@@ -12,7 +18,9 @@ import {
   User, 
   X,
   Paperclip,
-  Building
+  Building,
+  Download,
+  Loader2
 } from 'lucide-react';
 
 interface EmailCenterProps {
@@ -169,35 +177,84 @@ export const SendEmailModal: React.FC<SendEmailModalProps> = ({
   const [selectedDocId, setSelectedDocId] = useState<string>(documentRecord?.id || (documents[0]?.id ?? ''));
   const currentDoc = documents.find((d) => d.id === selectedDocId) || documentRecord;
 
+  // Initialize draft
+  const initialDraft = currentDoc
+    ? buildCorporateEmailDraft(currentDoc.documentType, { ...currentDoc.data, employeeName: currentDoc.employeeName, employeeEmail: currentDoc.employeeEmail, fileName: currentDoc.fileName }, companySettings)
+    : null;
+
   const [toEmail, setToEmail] = useState<string>(
-    currentDoc?.employeeEmail || 'candidate@example.com'
+    initialDraft?.to || currentDoc?.employeeEmail || ''
   );
   const [ccEmail, setCcEmail] = useState<string>(
-    companySettings.email || 'hr@emsurghealthcare.com'
+    initialDraft?.cc || companySettings.email || 'hr@emsurg.com'
   );
   const [subject, setSubject] = useState<string>(
-    `Official ${currentDoc ? currentDoc.documentType.toUpperCase() : 'HR'} Letter: ${currentDoc?.employeeName || 'Candidate'} - Emsurg Healthcare India Pvt. Ltd.`
+    initialDraft?.subject || `Official HR Letter - Emsurg Healthcare India Pvt. Ltd.`
   );
   const [emailBody, setEmailBody] = useState<string>(
-    `Dear ${currentDoc?.employeeName || 'Employee'},\n\nPlease find attached your official ${currentDoc ? currentDoc.documentType.toUpperCase() : ''} Letter from Emsurg Healthcare India Pvt. Ltd.\n\nKindly review the terms and return a signed copy of the acceptance section at your earliest convenience.\n\nWarm regards,\n\n${companySettings.signatoryName}\n${companySettings.signatoryTitle}\n${companySettings.companyName}\n${companySettings.addressLine1}, ${companySettings.cityStateZip}`
+    initialDraft?.body || ''
   );
   const [isSending, setIsSending] = useState(false);
+  const [dispatchFeedback, setDispatchFeedback] = useState<string | null>(null);
 
   const handleDocChange = (docId: string) => {
     setSelectedDocId(docId);
     const doc = documents.find((d) => d.id === docId);
     if (doc) {
-      setToEmail(doc.employeeEmail || '');
-      setSubject(`Official ${doc.documentType.toUpperCase()} Letter: ${doc.employeeName} - Emsurg Healthcare India Pvt. Ltd.`);
-      setEmailBody(
-        `Dear ${doc.employeeName},\n\nPlease find attached your official ${doc.documentType.toUpperCase()} Letter (${doc.referenceNo}) from Emsurg Healthcare India Pvt. Ltd.\n\nKindly review the terms, obligations, and return a signed copy of the acceptance section to the HR Department.\n\nWarm regards,\n\n${companySettings.signatoryName}\n${companySettings.signatoryTitle}\n${companySettings.companyName}\n${companySettings.addressLine1}, ${companySettings.cityStateZip}`
+      const draft = buildCorporateEmailDraft(
+        doc.documentType,
+        { ...doc.data, employeeName: doc.employeeName, employeeEmail: doc.employeeEmail, fileName: doc.fileName },
+        companySettings
       );
+      setToEmail(draft.to);
+      setCcEmail(draft.cc);
+      setSubject(draft.subject);
+      setEmailBody(draft.body);
     }
   };
 
-  const handleDispatch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleDispatch = async (clientType: 'gmail' | 'mailto') => {
+    if (!toEmail.trim()) {
+      alert("Please enter recipient's email address.");
+      return;
+    }
+
     setIsSending(true);
+
+    const draft = {
+      to: toEmail.trim(),
+      cc: ccEmail.trim(),
+      subject,
+      body: emailBody,
+      fileName: currentDoc?.fileName || 'document.pdf',
+    };
+
+    // Auto-trigger PDF download if preview elements exist on page
+    if (currentDoc) {
+      const elementIds = currentDoc.documentType === 'offer' || currentDoc.documentType === 'appointment'
+        ? ['doc-page-1', 'doc-page-2']
+        : ['doc-page-1'];
+
+      try {
+        await exportDocumentToPdf({
+          fileName: currentDoc.fileName,
+          elementIds,
+        });
+      } catch (err) {
+        console.warn('PDF download warning:', err);
+      }
+    }
+
+    // Open target composer
+    if (clientType === 'gmail') {
+      const gmailUrl = buildGmailComposeUrl(draft);
+      const win = window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+      if (!win) {
+        window.location.href = buildMailtoUrl(draft);
+      }
+    } else {
+      window.location.href = buildMailtoUrl(draft);
+    }
 
     const log: EmailLog = {
       id: `email-${Date.now()}`,
@@ -208,18 +265,16 @@ export const SendEmailModal: React.FC<SendEmailModalProps> = ({
       subject,
       sentAt: new Date().toISOString(),
       status: 'Sent',
-      notes: `Sent attachment ${currentDoc?.fileName || 'document.pdf'}`,
+      notes: `Dispatched with attachment ${currentDoc?.fileName || 'document.pdf'} | CC: ${ccEmail}`,
     };
 
-    // Trigger native mailto link as fallback/convenience for corporate email client
-    const mailtoLink = `mailto:${encodeURIComponent(toEmail)}?cc=${encodeURIComponent(ccEmail)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
-    window.location.href = mailtoLink;
+    setDispatchFeedback('PDF downloaded! Attach file in the opened composer and click Send.');
 
     setTimeout(() => {
       onSendSuccess(log, currentDoc?.id);
       setIsSending(false);
       onClose();
-    }, 600);
+    }, 1200);
   };
 
   return (
@@ -240,7 +295,14 @@ export const SendEmailModal: React.FC<SendEmailModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleDispatch} className="p-6 space-y-4">
+        {dispatchFeedback && (
+          <div className="mx-6 mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-semibold flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{dispatchFeedback}</span>
+          </div>
+        )}
+
+        <form onSubmit={(e) => { e.preventDefault(); handleDispatch('gmail'); }} className="p-6 space-y-4">
           {/* Document Attachment Picker if not passed */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -266,7 +328,9 @@ export const SendEmailModal: React.FC<SendEmailModalProps> = ({
                 <Paperclip className="w-4 h-4 text-teal-600" />
                 <span className="font-semibold">{currentDoc.fileName}</span>
               </div>
-              <span className="text-[10px] text-teal-700 font-medium">Ready to Attach</span>
+              <span className="text-[10px] text-teal-700 font-medium bg-teal-100 px-2 py-0.5 rounded">
+                Auto-downloads on Send
+              </span>
             </div>
           )}
 
@@ -288,14 +352,14 @@ export const SendEmailModal: React.FC<SendEmailModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                CC (HR Dept / Reporting Manager)
+                CC (HR Dept)
               </label>
               <input
                 type="email"
                 value={ccEmail}
                 onChange={(e) => setCcEmail(e.target.value)}
                 className="w-full text-xs px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="hr@emsurghealthcare.com"
+                placeholder="hr@emsurg.com"
               />
             </div>
           </div>
@@ -317,35 +381,49 @@ export const SendEmailModal: React.FC<SendEmailModalProps> = ({
           {/* Message Body */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Email Body
+              Email Body (Formal Corporate Copy)
             </label>
             <textarea
-              rows={6}
+              rows={7}
               value={emailBody}
               onChange={(e) => setEmailBody(e.target.value)}
               className="w-full text-xs px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono text-slate-700"
             />
           </div>
 
-          <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
-            <p className="text-[11px] text-slate-400">
-              Dispatches via default email handler &amp; logs record.
+          <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-[11px] text-slate-500">
+              Downloads high-res PDF and opens pre-filled composer.
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
+                className="px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
               >
                 Cancel
               </button>
               <button
-                type="submit"
+                type="button"
+                onClick={() => handleDispatch('mailto')}
                 disabled={isSending}
-                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white shadow-xs cursor-pointer disabled:opacity-50"
+                className="px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 cursor-pointer disabled:opacity-50"
+                title="Open in native desktop mail client"
               >
-                <Send className="w-3.5 h-3.5" />
-                <span>{isSending ? 'Sending...' : 'Send Email'}</span>
+                Default Mail
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDispatch('gmail')}
+                disabled={isSending}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-700 text-white shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {isSending ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Send className="w-3.5 h-3.5" />
+                )}
+                <span>{isSending ? 'Preparing...' : 'Send via Gmail'}</span>
               </button>
             </div>
           </div>

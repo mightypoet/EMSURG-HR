@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { CompanySettings } from '../types';
-import { Building2, Save, RotateCcw, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Building2, Save, RotateCcw, ShieldCheck, CheckCircle2, Database } from 'lucide-react';
 import { defaultCompanySettings } from '../data/initialData';
+import { SupabaseStatusBadge } from './SupabaseStatusBadge';
 
 interface SettingsViewProps {
   settings: CompanySettings;
@@ -58,6 +59,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <span>Reset Defaults</span>
         </button>
       </div>
+
+      {/* Supabase Database Connection Status */}
+      <SupabaseStatusBadge variant="card" />
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-6">
         {/* Company Identity */}
